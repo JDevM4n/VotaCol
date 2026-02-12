@@ -1,5 +1,12 @@
 # VotaCol – Flujo del sistema (versión simple para GitHub)
 
+# Desarrolladores del proyecto
+## Jesus David Mantilla Orozco
+## Nicolas Ramirez Jarava
+## Camila Correa Paez
+## Asly Camelo Arias
+## Santiago Castro González
+
 Este README describe el flujo general de **VotaCol**, separando claramente:
 1) **Validación de identidad (jurado + sistema)**  
 2) **Votación (cabina/pantalla asignada)**  
@@ -24,7 +31,6 @@ Este README describe el flujo general de **VotaCol**, separando claramente:
 
 > El stack puede cambiar, pero esta combinación es fácil para un proyecto académico y muy común en apps web.
 
-### Opción A 
 - **Backend:** Django
 - **Base de datos:** PostgreSQL
 - **Frontend:** React 
