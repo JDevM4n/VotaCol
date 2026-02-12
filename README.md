@@ -24,11 +24,11 @@ Este README describe el flujo general de **VotaCol**, separando claramente:
 
 > El stack puede cambiar, pero esta combinación es fácil para un proyecto académico y muy común en apps web.
 
-### Opción A (recomendada si quieren algo rápido y claro)
-- **Backend:** Node.js + Express
+### Opción A 
+- **Backend:** FastApi o Django
 - **Base de datos:** PostgreSQL
-- **Frontend:** React (o HTML/CSS/JS si quieren aún más simple)
-- **Almacenamiento de archivos:** carpeta local o MinIO (opcional)
+- **Frontend:** React 
+- **Almacenamiento de archivos:** carpeta local
 - **Autenticación:** JWT (solo para jurados/admin)
 
 **¿Por qué?**
@@ -37,33 +37,17 @@ Este README describe el flujo general de **VotaCol**, separando claramente:
 - PostgreSQL es fuerte para consultas y reportes (conteos).
 - React ayuda a hacer la pantalla de votación más ordenada.
 
-### Opción B (si prefieren Python)
-- **Backend:** Python + FastAPI
-- **Base de datos:** PostgreSQL
-- **Frontend:** React o HTML/CSS/JS
-- **Almacenamiento de archivos:** carpeta local o MinIO (opcional)
-
-**¿Por qué?**
-- FastAPI es simple y rápido para APIs.
-- Python facilita integrar cosas de visión/validación simulada si luego quieren crecer el proyecto.
-
----
-
-## 3. ¿Cuántas bases de datos son?
-
-Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
+## 3. Bases de datos a utilizar
 
 1. **DB principal (VotaCol)**
    - Sesiones
    - Votos (sin identidad)
    - Auditoría
-   - Rutas/hash de archivos (si guardan fotos/videos)
+   - Rutas/hash de archivos (fotos/videos)
 
 2. **DB simulada (Registraduría)**
    - Cédulas habilitadas/no habilitadas
    - Estado `ya_voto` para evitar doble voto
-
-> Si quieren simplificar aún más (modo demo), podrían hacerlo en 1 sola DB con dos esquemas, pero la idea de 2 DB es más fácil de explicar.
 
 ---
 
@@ -88,7 +72,7 @@ Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
    - se asigna una cabina/pantalla disponible
    - se marca en registraduría simulada: `ya_voto = true` (o “en_proceso”)
 
-✅ Resultado: la persona queda autorizada y con una sesión asignada.
+Resultado: la persona queda autorizada y con una sesión asignada.
 
 ---
 
@@ -101,7 +85,7 @@ Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
 5. El sistema registra el voto usando el **ID de sesión** (NO la cédula).
 6. La sesión se cierra y la cabina queda lista para el siguiente usuario.
 
-✅ Resultado: voto guardado sin asociarlo a identidad.
+Resultado: voto guardado sin asociarlo a identidad.
 
 ---
 
@@ -119,7 +103,7 @@ Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
    - incluye: `ID_sesion`, fecha/hora, y/o un QR para verificación
    - **NO incluye el candidato**
 
-✅ Resultado: trazabilidad sin revelar por quién votó.
+Resultado: trazabilidad sin revelar por quién votó.
 
 ---
 
@@ -127,9 +111,3 @@ Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
 
 El conteo se hace automáticamente con consultas SQL sobre la tabla `votes`.
 
-### Conteo en tiempo real (ejemplo SQL)
-```sql
-SELECT candidate_id, COUNT(*) AS total_votes
-FROM votes
-GROUP BY candidate_id
-ORDER BY total_votes DESC;
