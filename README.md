@@ -1,17 +1,135 @@
-# VotaCol
-# MVP Sistema de Votación Biométrica
+# VotaCol – Flujo del sistema (versión simple para GitHub)
 
-⚠️ Proyecto en desarrollo (MVP / Proof of Concept)
+Este README describe el flujo general de **VotaCol**, separando claramente:
+1) **Validación de identidad (jurado + sistema)**  
+2) **Votación (cabina/pantalla asignada)**  
+3) **Auditoría + comprobante**  
+4) **Conteo automatizado de votos por candidato**
 
-Este repositorio contiene un prototipo académico de un sistema de votación electrónica
-con enfoque en seguridad, integridad y trazabilidad transaccional.
+> Nota: El diseño busca **mantener el secreto del voto** (no se debe poder relacionar “persona → candidato”).
 
-## Estado del proyecto
-- En fase inicial
-- No es un sistema final listo para producción
+---
 
-## Objetivo
-Explorar el diseño de un sistema de votación segura para entornos académicos.
+## 1. Objetivo del flujo
 
-## Tecnologías
-Por definir (según avance del proyecto).
+- Verificar que la persona **puede votar** (simulando Registraduría).
+- Permitir el voto en una cabina/pantalla asignada.
+- Guardar evidencia/auditoría del proceso **sin revelar por quién votó**.
+- Generar comprobante (impreso o por correo) que confirme que el voto quedó registrado.
+- Generar el **conteo automático por candidato** en tiempo real (o al cierre).
+
+---
+
+## 2. Stack propuesto (simple y justificable)
+
+> El stack puede cambiar, pero esta combinación es fácil para un proyecto académico y muy común en apps web.
+
+### Opción A (recomendada si quieren algo rápido y claro)
+- **Backend:** Node.js + Express
+- **Base de datos:** PostgreSQL
+- **Frontend:** React (o HTML/CSS/JS si quieren aún más simple)
+- **Almacenamiento de archivos:** carpeta local o MinIO (opcional)
+- **Autenticación:** JWT (solo para jurados/admin)
+
+**¿Por qué?**
+- Mucha documentación y ejemplos.
+- Rápido de desarrollar.
+- PostgreSQL es fuerte para consultas y reportes (conteos).
+- React ayuda a hacer la pantalla de votación más ordenada.
+
+### Opción B (si prefieren Python)
+- **Backend:** Python + FastAPI
+- **Base de datos:** PostgreSQL
+- **Frontend:** React o HTML/CSS/JS
+- **Almacenamiento de archivos:** carpeta local o MinIO (opcional)
+
+**¿Por qué?**
+- FastAPI es simple y rápido para APIs.
+- Python facilita integrar cosas de visión/validación simulada si luego quieren crecer el proyecto.
+
+---
+
+## 3. ¿Cuántas bases de datos son?
+
+Para mantenerlo simple y alineado con lo que dijeron, son **2 bases de datos**:
+
+1. **DB principal (VotaCol)**
+   - Sesiones
+   - Votos (sin identidad)
+   - Auditoría
+   - Rutas/hash de archivos (si guardan fotos/videos)
+
+2. **DB simulada (Registraduría)**
+   - Cédulas habilitadas/no habilitadas
+   - Estado `ya_voto` para evitar doble voto
+
+> Si quieren simplificar aún más (modo demo), podrían hacerlo en 1 sola DB con dos esquemas, pero la idea de 2 DB es más fácil de explicar.
+
+---
+
+## 4. Flujo completo paso a paso
+
+### Fase A — Validación en mesa (jurado)
+1. La persona se acerca al jurado y entrega la cédula.
+2. El jurado revisa visualmente:
+   - que la cédula sea original
+   - que la cara coincida
+3. El sistema toma:
+   - foto de la cédula
+   - foto de la persona
+4. El sistema valida contra la **Registraduría simulada**:
+   - existe / no existe
+   - habilitado / no habilitado
+   - ya votó / no ha votado
+5. Si **NO pasa** la validación:
+   - se registra un evento de auditoría (“rechazado”)
+6. Si **SÍ pasa** la validación:
+   - se crea una **sesión de votación** (ID de sesión)
+   - se asigna una cabina/pantalla disponible
+   - se marca en registraduría simulada: `ya_voto = true` (o “en_proceso”)
+
+✅ Resultado: la persona queda autorizada y con una sesión asignada.
+
+---
+
+### Fase B — Votación en cabina/pantalla
+1. La persona llega a la cabina asignada.
+2. Aparece una pantalla inicial con instrucciones + conteo regresivo:
+   - `5...4...3...2...1`
+3. Se muestran los candidatos.
+4. La persona selecciona su candidato y confirma.
+5. El sistema registra el voto usando el **ID de sesión** (NO la cédula).
+6. La sesión se cierra y la cabina queda lista para el siguiente usuario.
+
+✅ Resultado: voto guardado sin asociarlo a identidad.
+
+---
+
+### Fase C — Auditoría + comprobante
+1. El sistema guarda auditoría del proceso como eventos:
+   - “sesión creada”
+   - “cabina asignada”
+   - “pantalla de candidatos cargada”
+   - “voto confirmado”
+   - “sesión cerrada”
+2. Para evitar manipulación de auditorías, cada evento guarda:
+   - `hash_actual = SHA256(datos_evento + hash_evento_anterior)`
+3. Se genera comprobante:
+   - impreso o enviado por correo
+   - incluye: `ID_sesion`, fecha/hora, y/o un QR para verificación
+   - **NO incluye el candidato**
+
+✅ Resultado: trazabilidad sin revelar por quién votó.
+
+---
+
+## 5. Conteo automatizado de votos por candidato
+
+El conteo se hace automáticamente con consultas SQL sobre la tabla `votes`.
+
+### Conteo en tiempo real (ejemplo SQL)
+```sql
+SELECT candidate_id, COUNT(*) AS total_votes
+FROM votes
+GROUP BY candidate_id
+ORDER BY total_votes DESC;
