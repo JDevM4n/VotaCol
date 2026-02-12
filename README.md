@@ -1,11 +1,13 @@
 # VotaCol – Flujo del sistema (versión simple para GitHub)
 
 # Desarrolladores del proyecto
+
 ## Jesus David Mantilla Orozco
 ## Nicolas Ramirez Jarava
 ## Camila Correa Paez
 ## Asly Camelo Arias
 ## Santiago Castro González
+
 
 Este README describe el flujo general de **VotaCol**, separando claramente:
 1) **Validación de identidad (jurado + sistema)**  
