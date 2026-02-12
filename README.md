@@ -12,7 +12,7 @@ Este README describe el flujo general de **VotaCol**, separando claramente:
 
 ## 1. Objetivo del flujo
 
-- Verificar que la persona **puede votar** (simulando Registraduría).
+- Verificar que la persona **puede votar** (simulando Registraduría en una base de datos).
 - Permitir el voto en una cabina/pantalla asignada.
 - Guardar evidencia/auditoría del proceso **sin revelar por quién votó**.
 - Generar comprobante (impreso o por correo) que confirme que el voto quedó registrado.
@@ -20,22 +20,24 @@ Este README describe el flujo general de **VotaCol**, separando claramente:
 
 ---
 
-## 2. Stack propuesto (simple y justificable)
+## 2. Stack propuesto
 
 > El stack puede cambiar, pero esta combinación es fácil para un proyecto académico y muy común en apps web.
 
 ### Opción A 
-- **Backend:** FastApi o Django
+- **Backend:** Django
 - **Base de datos:** PostgreSQL
 - **Frontend:** React 
 - **Almacenamiento de archivos:** carpeta local
-- **Autenticación:** JWT (solo para jurados/admin)
 
-**¿Por qué?**
+  **¿Por qué?**
 - Mucha documentación y ejemplos.
 - Rápido de desarrollar.
 - PostgreSQL es fuerte para consultas y reportes (conteos).
 - React ayuda a hacer la pantalla de votación más ordenada.
+  
+### Arquitectura a emplear:
+- **Capas: ** Mantiene orden y responsabilidad por capas como presentacion, logica y datos.
 
 ## 3. Bases de datos a utilizar
 
